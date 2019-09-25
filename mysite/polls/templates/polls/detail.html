@@ -1,0 +1,28 @@
+<h1>{{ question.question_text }}</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'polls:vote' question.id %}" method='post'>
+{% csrf_token %}
+{% for choice in question.choice_set.all %}
+    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+    <label for="choice{{ forloop.counter }}"">{{ choice.choice_text}}</label><br>
+{% endfor %}
+<input type="submit" value="Vote">
+</form>
+
+<!--
+模板在Question的每个Choice前添加一个单选按钮，每个单选按钮的value属性是对应的各个Choice的ID。每个单选按钮的name是choice。
+这意味着，当有人选择一个单选按钮并提交表单提交时，它将发送一个POST数据choice=#，其中#为选择的Choice的ID。
+这是HTML表单的基本概念。
+
+设置表单的action为{% url 'polls:vote' question.id %}，并设置method="post"。
+使用method="post"是非常重要的（与其相对的是method="get"）。
+
+forloop.counter指示for标签已经循环了多少次
+
+由于我们创建一个POST表单，所以需要小心跨站点请求伪造。
+你不必太过担心，Django已经拥有一个用来防御它的非常容易使用的系统。
+简而言之，所有针对内部URL的POST表单都应该使用 {% csrf_token %}模板标签。
+
+-->

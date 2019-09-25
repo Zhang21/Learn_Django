@@ -1,4 +1,4 @@
-#learnDjango
+# learnDjango
 
 reference:
 
@@ -14,7 +14,11 @@ reference:
 - [初识Django](#初识Django)
 - [快速安装指南](#快速安装指南)
 - [编写第一个Django应用-1](#Django1)
-
+- [编写第一个Django应用-2](#Django2)
+- [编写第一个Django应用-3](#Django3)
+- [编写第一个Django应用-4](#Django4)
+- [编写第一个Django应用-5](#Django5)
+- [编写第一个Django应用-6](#Django6)
 
 <br/>
 <br/>
@@ -522,3 +526,170 @@ Django自带的数据库API很方便，这里我们在视图里使用它。编�
 
 
 ## Django4
+
+我们将继续编写投票应用，专注于简单的表单处理并且精简我们的代码。
+
+
+<br/>
+
+
+### 编写一个简答的表单
+
+编写投票详细页面的模板(`polls/detail.html`)，让它包含一个HTML`<form>`表单元素。
+
+现在，让我们来创建一个Django视图来处理提交的数据。更新`polls/views`中的`vote()`函数。
+现在，创建一个`polls/results.html`模板。
+
+现在，在浏览器中访问`/polls/1/`然后为Question投票。
+
+
+<br/>
+<br/>
+
+
+### 使用通用视图
+
+使用通用视图，代码还是少点好。
+
+`detail()`和`results()`视图都很简单——像上面提到的那样，存在冗余问题。用来显示一个投票列表的`index()`视图和它们类似。
+
+这些视图反映基本的Web开发中的一个常见情况：根据URL的参数从数据库中获取数据、载入模板文件然后返回渲染后的模板。由于这种情况特别常见，Django提供了一种快捷方式，叫做通用视图系统。
+通用视图将常见的模式抽象化，可使你在编写应用时甚至不需要编写Python代码。
+
+让我们将投票应用转换成使用通用视图系统，这样我们可以删除许多代码。仅需要做一下几步来完成转换:
+
+1. 转换URLconf
+2. 删除一些旧的、不再需要的视图
+3. 基于Django的通用视图引入新的视图
+
+> 为什么要重构代码?
+> 一般来说，当编写一个Django应用时，应该先评估一些通用视图数是否可以解决你的问题，你应该一开始使用它，而不是进行到一半时重构代码。
+> 本教程目前是有意讲重点放在以艰难的方式编写视图，这是为了将重点放在核心概念上。
+
+
+<br/>
+
+
+#### 改良URLconf
+
+修改`polls/urls.py`这个URLconf。
+
+
+<br/>
+
+
+#### 改良视图
+
+我们将删除旧的index, detail和results视图，并用Django的通用视图代替。修改`polls/views.py`文件。
+
+这里使用两个通用视图: `ListView`和`DetailView`。这两个视图分别抽象显示一个对象和显示一个特定类型对象的详细信息页面这两种概念:
+
+- 每个通用视图需要知道它将作用于哪个模型，这由model属性提供
+- DetailView期望从URL中捕获名为'pk'的主键值，所以我们为通用视图把`question_id`改成pk。
+
+默认情况下，通用视图`DetailView`使用一个叫做`<app name>/<model name>_detail.html`的模板。在此例子中，它将使用`polls/question_detail.html`模板。
+
+
+
+<br/>
+<br/>
+<br/>
+
+
+
+## Django5
+
+在这一部分里，我们将为它创建一些自动化测试。
+
+
+<br/>
+
+
+### 自动化测试简介
+
+
+
+
+
+
+
+
+
+
+
+
+<br/>
+<br/>
+<br/>
+
+
+
+## Django6
+
+为应用加上样式和图片。
+
+除了服务端生成的HTML以外，网络应用通常需要一些额外的文件——比如图片，脚本和样式表，来帮助渲染网络页面。在Django中，我们把这些文件统称为**静态文件**。
+
+对于小项目来说，这个问题没什么大不了的，因为你可以把这些静态文件随便放在哪，主要服务程序能找到它们就行。然而在大项目——特别是由好几个应用组成的大项目中，处理不同应用所需的静态文件的工作就显得有点麻烦了。
+
+这就是`django.contrib.staticfiles`存在的意义：它将各个应用的静态文件（和一些你指明的目录里的文件）统一收集起来，这样一来，在生产环境中，这些文件就会集中在一个便与分发的地方。
+
+
+<br/>
+
+
+### 自定义应用的界面和风格
+
+首先，在你的polls目录下创建一个名为static的目录。Django将在该目录下查找静态文件，这种方式和Django在`polls/templates/`目录下查找template的方式类似。
+
+Django的`STATICFILES_FINDERS`设置包含了一系列的查找器，它们知道去哪里找到static文件。`AppDirectoriesFinder`是默认查找器中的一个，它会在每个`INSTALLED_APPS`中指定的应用的子文件中寻找名称为static的特定文件夹，就像我们在polls中刚创建的那个一样。管理后台采用相同的目录结构管理它的静态文件。
+
+> 静态文件和命名空间
+> 虽然我们可以像管理模板文件一样，把static文件直接放入polls/static，而不是创建另一个名为polls的子文件夹，不过这实际上是一个很蠢的做法。Django只会使用第一个找到的静态文件。如果你在其它应用中有一个相同名字的静态文件，Django将无法区分它们。我们需要指引Django选择正确的静态文件，而最简单的方式就是把它们放入各自的命名空间。也就是把这些静态文件放入另一个与应用名相同的目录中。
+
+```
+# 添加样式
+mkdir -p polls/static/polls
+vim polls/static/polls/style.css
+
+li a {
+    color: green;
+}
+
+
+# 在index文件头添加一下内容
+# {% static %} 模板标签会生成静态文件的绝对路径
+vim polls/templates/polls/index.html
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+
+
+# 启动服务器，访问http://localhost:8000/polls/就能看到此效果
+python3 manage.py runserver
+```
+
+
+<br/>
+
+
+### 添加一个背景图
+
+接着，在`polls/static/polls`目录下创建一个名为`images`的子目录。在目录中放一张`backgroud.gif`的图片。
+
+```
+# 修改样式表
+vim polls/static/polls/style.css
+
+body {
+    background: white url("images/background.gif") no-repeat;
+}
+
+# 重载之后，便可在http://localhost:8000/polls/看到这张背景图。
+```
+
+> 警告:
+> 当然， {% static %}模板标签在静态文件(如样式表)中是不可用的，因为它们不是由Django生成的。你仍需要使用相对路径的方式在你的静态文件之间互相引用。这样之后，你就可以任意改变`STATIC_URL`（由`:ttag:static`模板标签用于生成URL），而无需修改大量的静态文件。
+
+这些知识基础，更多内容请参考静态文件相关的文档。
